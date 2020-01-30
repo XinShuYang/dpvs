@@ -114,6 +114,7 @@ static int second_timer_expire(void *priv)
 }
 #endif
 
+//初始化分配每个numa节点的mempool
 int dp_vs_synproxy_init(void)
 {
     int i;
@@ -133,16 +134,19 @@ int dp_vs_synproxy_init(void)
     /* allocate NUMA-aware ACK list cache */
     for (i = 0; i < get_numa_nodes(); i++) {
         snprintf(ack_mbufpool_name, sizeof(ack_mbufpool_name), "ack_mbufpool_%d", i);
+        //每个numa结点的名字替换写入ack_mbufpool_name作为变量
         dp_vs_synproxy_ack_mbufpool[i] = rte_mempool_create(ack_mbufpool_name,
                 DP_VS_SYNPROXY_ACK_MBUFPOOL_SIZE,
                 sizeof(struct dp_vs_synproxy_ack_pakcet),
                 DP_VS_SYNPROXY_ACK_CACHE_SIZE,
                 0, NULL, NULL, NULL, NULL,
                 i, 0);
+        //每个numa结点分配一个mempool
         if (!dp_vs_synproxy_ack_mbufpool[i]) {
             for (i = i - 1; i >= 0; i--)
                 rte_mempool_free(dp_vs_synproxy_ack_mbufpool[i]);
             return EDPVS_NOMEM;
+        //如果分配失败释放掉mbufpool
         }
     }
 
@@ -172,6 +176,7 @@ int dp_vs_synproxy_term(void)
 #define COOKIEBITS 24 /* Upper bits store count */
 #define COOKIEMASK (((uint32_t)1 << COOKIEBITS) - 1)
 
+//五元祖md5哈希算出来存到hvalue
 static uint32_t
 cookie_hash(uint32_t saddr, uint32_t daddr,
             uint16_t sport, uint16_t dport,
@@ -188,7 +193,9 @@ cookie_hash(uint32_t saddr, uint32_t daddr,
     data[4] = g_net_secret[c][0];
 
     MD5((unsigned char *)data, sizeof(data), hash);
+    //md5运算存到hash里面
     memcpy(&hvalue, hash, sizeof(hvalue));
+    //截取拷贝hvalue长度到hvalue里面
 
     return hvalue;
 }
