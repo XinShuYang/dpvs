@@ -255,6 +255,7 @@ check_tcp_syn_cookie(uint32_t cookie,
     return (cookie - cookie_hash(saddr, daddr, sport, dport, count - diff, 1))
         & COOKIEMASK; /* Leaving the data behind */
 }
+/* 防止传过来的数据越界，测一下 */
 
 static uint32_t
 cookie_hash_v6(const struct in6_addr *saddr,
