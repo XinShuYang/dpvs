@@ -219,6 +219,12 @@ secure_tcp_syn_cookie(uint32_t saddr, uint32_t daddr,
         sseq + (count << COOKIEBITS) +
         ((cookie_hash(saddr, daddr, sport, dport, count, 1) + data) & COOKIEMASK));
 }
+ /*SYN Cookie是对TCP服务器端的三次握手协议作一些修改，专门用来防范SYN Flood攻击的一种手段。
+    它的原理是，在TCP服务器收到TCP SYN包并返回TCP SYN+ACK包时，不分配一个专门的数据区，而是根据这个SYN包计算出一个cookie值。
+    在收到TCP ACK包时，TCP服务器在根据那个cookie值检查这个TCP ACK包的合法性。如果合法，再分配专门的数据区进行处理未来的TCP连接。
+
+　　从上面的介绍可以看出，SYN Cookie的原理比较简单。到实际的应用中，它有多种不同的实现方式。
+ */
 
 static uint32_t
 check_tcp_syn_cookie(uint32_t cookie,
@@ -248,12 +254,6 @@ check_tcp_syn_cookie(uint32_t cookie,
 
     return (cookie - cookie_hash(saddr, daddr, sport, dport, count - diff, 1))
         & COOKIEMASK; /* Leaving the data behind */
-    /*SYN Cookie是对TCP服务器端的三次握手协议作一些修改，专门用来防范SYN Flood攻击的一种手段。
-    它的原理是，在TCP服务器收到TCP SYN包并返回TCP SYN+ACK包时，不分配一个专门的数据区，而是根据这个SYN包计算出一个cookie值。
-    在收到TCP ACK包时，TCP服务器在根据那个cookie值检查这个TCP ACK包的合法性。如果合法，再分配专门的数据区进行处理未来的TCP连接。
-
-　　从上面的介绍可以看出，SYN Cookie的原理比较简单。到实际的应用中，它有多种不同的实现方式。
-    */
 }
 
 static uint32_t
