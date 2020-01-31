@@ -582,6 +582,7 @@ static void syn_proxy_parse_set_opts(struct rte_mbuf *mbuf, struct tcphdr *th,
         }
     }
 }
+/*记录TCP options 中的内容以上*/
 
 /* Reuse mbuf for syn proxy, called by syn_proxy_syn_rcv().
  * do following things:
